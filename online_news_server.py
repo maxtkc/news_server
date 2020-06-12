@@ -1,15 +1,32 @@
 import requests
 import serial
 import time
+import datetime
+
+dt = datetime.datetime.now()
+day = dt.day
 
 ser = serial.Serial('/dev/ttyUSB0', 57600)
 
 #url = 'https://newsapi.org/v2/top-headlines?'
 url = 'https://newsapi.org/v2/everything?'
 
+days = 18
+sources = 'bbc.com'
+search = 'boris'
+sort = 'popularity'
 
-params = dict(qInTitle='uk', sortBy='popularity', domains='bbc.com', language='en', **{'from':'2020-06-01'}, apiKey='d326d5d1b37b4d6085e89f2c747942f2')
-#params = dict(qInTitle='bicycle', sortBy='popularity', apiKey='d326d5d1b37b4d6085e89f2c747942f2')
+params = {
+    'language': 'en',
+    'apiKey': 'd326d5d1b37b4d6085e89f2c747942f2'
+}
+
+params.update( {'from' : '2020-05-{}'.format(days)} )
+params.update( {'domains' : '{}'.format(sources)} )
+params.update( {'qInTitle' : '{}'.format(search)} )
+params.update( {'sortBy' : '{}'.format(sort)} )
+
+#params = dict(qInTitle='uk', sortBy='popularity', domains='bbc.com', language='en', **{'from':'2020-06-01'}, apiKey='d326d5d1b37b4d6085e89f2c747942f2')
 
 response = requests.get(url, params=params)
 
