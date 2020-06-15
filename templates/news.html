@@ -1,0 +1,41 @@
+<html>
+	<body>
+		<h2>Enter your search parameters</h2>
+
+      	<form action = "http://localhost:5000/view" method = "POST" enctype = "multipart/form-data">
+	
+  		<label for="days">Length in days (max30):</label>
+  		<input type="number" name="days" min="1" max="30">
+		<br><br>
+	
+ 		<label for="keyword">Search word</label>
+  		<input type="text" name="keyword">
+		<br><br>
+
+        <p id = "news_sources"></p>
+
+  		<input type="submit" value="Submit">
+		</form>
+	</body>
+	<script>
+		const my_items = ["bbc", "cnn", "reuters", "espn", "techcrunch", "engadget", "businessinsider", "wired", "theverge", "gizmodo", 
+							"mashable", "eonline", "cnet", "usatoday", "foxnews", "dailybeast", "nytimes", "theguardian", "cbsnews"];
+		var i = 0;
+		for (item of my_items) {
+  			var chk = document.createElement('input');
+  			chk.setAttribute('type', 'checkbox');
+  			chk.setAttribute('id', 'source' + i);
+  			chk.setAttribute('name', 'sources');
+  			chk.setAttribute('value', my_items[i] +'.com');
+
+  			var lbl = document.createElement('label');
+  			lbl.setAttribute('for', 'source' + i);
+  			lbl.appendChild(document.createTextNode(my_items[i]));
+  
+  			news_sources.appendChild(chk);
+  			news_sources.appendChild(lbl);
+  			i = i + 1;
+		}
+	</script>
+
+</html>

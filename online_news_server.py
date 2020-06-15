@@ -1,52 +1,74 @@
+from flask import Flask, render_template, request
+from datetime import datetime, timedelta 
+
 import requests
 import serial
 import time
-import datetime
 
-dt = datetime.datetime.now()
-day = dt.day
+app = Flask(__name__)
 
 ser = serial.Serial('/dev/ttyUSB0', 57600)
+ser.flush()
 
 #url = 'https://newsapi.org/v2/top-headlines?'
 url = 'https://newsapi.org/v2/everything?'
 
-days = 18
-sources = 'bbc.com'
-search = 'boris'
+tdays = 18
 sort = 'popularity'
 
-params = {
-    'language': 'en',
-    'apiKey': 'd326d5d1b37b4d6085e89f2c747942f2'
-}
+@app.route('/')
+def index():
+	return render_template('news.html')
 
-params.update( {'from' : '2020-05-{}'.format(days)} )
-params.update( {'domains' : '{}'.format(sources)} )
-params.update( {'qInTitle' : '{}'.format(search)} )
-params.update( {'sortBy' : '{}'.format(sort)} )
+@app.route('/view', methods = ['GET', 'POST'])
+def set_parameters():
+	if request.method == 'POST':
+		days = request.form.get('days')
+		keyword = request.form.get('keyword')
+		sources = request.form.getlist('sources')
+		news = generate_news(keyword, sources, days)
+		display_news(news)
+	return render_template('view.html')
 
-#params = dict(qInTitle='uk', sortBy='popularity', domains='bbc.com', language='en', **{'from':'2020-06-01'}, apiKey='d326d5d1b37b4d6085e89f2c747942f2')
+def generate_news(search, sources, days):
+	params = {
+		'language': 'en',
+		'apiKey': 'd326d5d1b37b4d6085e89f2c747942f2'
+	}
+	source_set = ','.join(sources)
+	
+	dt = datetime.now() -timedelta(days = int(days))
+	month = dt.month
+	day = dt.day
 
-response = requests.get(url, params=params)
+	params.update( {'from' : '2020-{}-{}'.format(month, day)} )
+	params.update( {'domains' : '{}'.format(source_set)} )
+	params.update( {'qInTitle' : '{}'.format(search)} )
+	params.update( {'sortBy' : '{}'.format(sort)} )
 
-news = response.json()
-print(type(news))
+	response = requests.get(url, params=params)
 
-#description = news['articles'][2]['title'].upper()
+	print(params)
+	return response.json()
 
-#print(description)
+def display_news(news):
 
-ser.flush()
+	for article in news['articles']:
+		print(article['title'])
 
-for article in news['articles']:
-	print(article['title'])
-
-x = 0
-while True:
 	for article in news['articles']:
 		title = article['title'].upper()
 		for letter in title:
-			ser.write(letter.encode())
-			time.sleep(.3)
+			print(letter, end=" ")
+			#ser.write(letter.encode())
+			#time.sleep(.3)
 		ser.write(" ++ ".encode())
+
+def main():
+	news = generate_news()
+	display_news(news)
+
+if __name__ == "__main__":
+	#main()
+	app.run(debug=True)
+
