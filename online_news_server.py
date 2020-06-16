@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 from datetime import datetime, timedelta 
 
+import asyncio
 import requests
 import serial
 import time
@@ -11,6 +12,8 @@ app = Flask(__name__)
 # Note: Should make port selection in browser
 ser = serial.Serial('/dev/ttyUSB0', 57600)
 ser.flush()
+
+serial_lock = asyncio.Lock()
 
 # Hardcoded URL for news server
 #url = 'https://newsapi.org/v2/top-headlines?'
@@ -64,15 +67,15 @@ def generate_news(search, sources, days):
 	return response.json()
 
 def display_news(news):
-
 	for article in news['articles']:
 		title = article['title'].upper()
-		print(title)
-		for letter in title:
-			print(letter)
-			#ser.write(letter.encode())
-			time.sleep(.3)
-		#ser.write(" ++ ".encode())
+		async with serial_lock:
+			print(title)
+			for letter in title:
+				print(letter)
+				#ser.write(letter.encode())
+				time.sleep(.3)
+			#ser.write(" ++ ".encode())
 
 def main():
 	news = generate_news()
