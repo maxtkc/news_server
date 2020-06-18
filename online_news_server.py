@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request
 from datetime import datetime, timedelta 
 
-import asyncio
 import requests
 import serial
 import time
+import threading
 
 app = Flask(__name__)
 
@@ -13,7 +13,7 @@ app = Flask(__name__)
 ser = serial.Serial('/dev/ttyUSB0', 57600)
 ser.flush()
 
-serial_lock = asyncio.Lock()
+serial_lock = threading.Lock()
 
 # Hardcoded URL for news server
 #url = 'https://newsapi.org/v2/top-headlines?'
@@ -69,7 +69,7 @@ def generate_news(search, sources, days):
 def display_news(news):
 	for article in news['articles']:
 		title = article['title'].upper()
-		async with serial_lock:
+		with serial_lock:
 			print(title)
 			for letter in title:
 				print(letter)
